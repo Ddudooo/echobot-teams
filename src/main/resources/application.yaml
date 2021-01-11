@@ -1,0 +1,8 @@
+server:
+  port: 80
+
+bot:
+  ms:
+    credentials:
+      appId: #app-id
+      password: #password
