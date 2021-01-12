@@ -1,6 +1,6 @@
 package com.botframework.sample.echobot.bot.adapter;
 
-import com.botframework.sample.echobot.bot.adapter.provider.CustomCredentialProvider;
+import com.botframework.sample.echobot.repo.ConversationRefRepo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +19,7 @@ public class CustomHttpAdapterConfig {
     private String password;
 
     @Bean
-    public CustomHttpAdapter getCustomHttpAdapter() {
-        return new CustomHttpAdapter(new CustomCredentialProvider(appId, password));
+    public CustomHttpAdapter getCustomHttpAdapter(ConversationRefRepo refRepo) {
+        return new CustomHttpAdapter(appId, password, refRepo);
     }
 }

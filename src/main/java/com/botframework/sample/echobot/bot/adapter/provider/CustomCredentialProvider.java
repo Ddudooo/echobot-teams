@@ -1,5 +1,6 @@
 package com.botframework.sample.echobot.bot.adapter.provider;
 
+import com.microsoft.bot.connector.authentication.CredentialProvider;
 import com.microsoft.bot.connector.authentication.SimpleCredentialProvider;
 
 /**
@@ -7,7 +8,8 @@ import com.microsoft.bot.connector.authentication.SimpleCredentialProvider;
  *
  * @see SimpleCredentialProvider
  */
-public class CustomCredentialProvider extends SimpleCredentialProvider {
+public class CustomCredentialProvider extends SimpleCredentialProvider implements
+    CredentialProvider {
 
     public CustomCredentialProvider(String appId, String password) {
         setAppId(appId);
