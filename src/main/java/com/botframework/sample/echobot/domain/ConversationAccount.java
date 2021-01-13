@@ -4,11 +4,17 @@ import com.microsoft.bot.schema.RoleTypes;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.GenericGenerator;
 
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
@@ -18,13 +24,15 @@ import javax.persistence.OneToOne;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ConversationAccount extends com.microsoft.bot.schema.ConversationAccount {
 
-    @Id
-    @GeneratedValue
-    @Column(name = "CONVERSATION_ACCOUNT_ID")
-    private Long _id;
+    @Setter(value = AccessLevel.PROTECTED)
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "_conversation")
+    private ConversationRef ref;
 
-    @OneToOne(mappedBy = "_conversation")
-    private ConversationRef _user;
+    @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(name = "CONVERSATION_ACCOUNT_ID")
+    private UUID uuid;
 
     @Column(name = "IS_GROUP")
     private boolean isGroup = false;
@@ -54,6 +62,25 @@ public class ConversationAccount extends com.microsoft.bot.schema.ConversationAc
         this.setConversationType(account.getConversationType());
         this.setAadObjectId(account.getAadObjectId());
         this.setRole(account.getRole());
+        this.setId(account.getId());
+        this.setTenantId(account.getTenantId());
+
+        for (String key : account.getProperties().keySet()) {
+            this.setProperties(key, account.getProperties().get(key));
+        }
+    }
+
+    public ConversationAccount(com.microsoft.bot.schema.ConversationAccount account,
+        ConversationRef ref) {
+        this.setName(account.getName());
+        this.setIsGroup(account.isGroup());
+        this.setConversationType(account.getConversationType());
+        this.setAadObjectId(account.getAadObjectId());
+        this.setRole(account.getRole());
+        this.setId(account.getId());
+        this.setTenantId(account.getTenantId());
+        this.setRef(ref);
+
         for (String key : account.getProperties().keySet()) {
             this.setProperties(key, account.getProperties().get(key));
         }
@@ -99,5 +126,31 @@ public class ConversationAccount extends com.microsoft.bot.schema.ConversationAc
     public void setRole(RoleTypes withRole) {
         this.role = withRole;
         super.setRole(withRole);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ConversationAccount account = (ConversationAccount) o;
+
+        return new EqualsBuilder()
+            .append(getId(), account.getId())
+            .append(getRef(), account.getRef())
+            .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+            .append(getId())
+            .append(getRef())
+            .toHashCode();
     }
 }

@@ -1,7 +1,6 @@
 package com.botframework.sample.echobot.bot;
 
-import com.botframework.sample.echobot.domain.ConversationRef;
-import com.botframework.sample.echobot.repo.ConversationRefRepo;
+import com.botframework.sample.echobot.service.ConversationService;
 import com.microsoft.bot.builder.ActivityHandler;
 import com.microsoft.bot.builder.BotFrameworkAdapter;
 import com.microsoft.bot.builder.InvokeResponse;
@@ -32,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class SimpleBot extends ActivityHandler {
 
-    private final ConversationRefRepo refRepo;
+    private final ConversationService conversationService;
 
     @Override
     protected CompletableFuture<Void> onMessageActivity(TurnContext turnContext) {
@@ -48,8 +47,7 @@ public class SimpleBot extends ActivityHandler {
         ChannelAccount account = ref.getUser();
         log.info("Channel account [{}]", account.getAadObjectId());
         log.info("Channel account [{}]", account.getId());
-        ConversationRef refEntity = new ConversationRef(ref);
-        refRepo.save(refEntity);
+        conversationService.saveConversation(ref);
         turnContext.sendActivity(
             MessageFactory.text(turnContext.getActivity().getText())
         ).thenApply(resourceResponse -> null);

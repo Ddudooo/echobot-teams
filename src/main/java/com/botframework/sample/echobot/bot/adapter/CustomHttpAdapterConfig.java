@@ -1,6 +1,6 @@
 package com.botframework.sample.echobot.bot.adapter;
 
-import com.botframework.sample.echobot.repo.ConversationRefRepo;
+import com.botframework.sample.echobot.service.ConversationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +19,7 @@ public class CustomHttpAdapterConfig {
     private String password;
 
     @Bean
-    public CustomHttpAdapter getCustomHttpAdapter(ConversationRefRepo refRepo) {
-        return new CustomHttpAdapter(appId, password, refRepo);
+    public CustomHttpAdapter getCustomHttpAdapter(ConversationService conversationService) {
+        return new CustomHttpAdapter(appId, password, conversationService);
     }
 }

@@ -1,20 +1,20 @@
 package com.botframework.sample.echobot.bot.adapter;
 
 import com.botframework.sample.echobot.bot.adapter.provider.CustomCredentialProvider;
-import com.botframework.sample.echobot.domain.ChannelAccount;
 import com.botframework.sample.echobot.domain.ConversationRef;
-import com.botframework.sample.echobot.repo.ConversationRefRepo;
+import com.botframework.sample.echobot.service.ConversationService;
 import com.microsoft.bot.builder.Bot;
 import com.microsoft.bot.builder.BotFrameworkAdapter;
 import com.microsoft.bot.builder.InvokeResponse;
 import com.microsoft.bot.connector.authentication.ChannelProvider;
 import com.microsoft.bot.connector.authentication.CredentialProvider;
 import com.microsoft.bot.schema.Activity;
+import com.microsoft.bot.schema.ChannelAccount;
+import com.microsoft.bot.schema.ConversationAccount;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -30,13 +30,14 @@ public class CustomHttpAdapter extends BotFrameworkAdapter {
     private String appId;
     @Getter(value = AccessLevel.PRIVATE)
     private String password;
-    private ConversationRefRepo refRepo;
+    private ConversationService conversationService;
 
-    public CustomHttpAdapter(String appId, String password, ConversationRefRepo refRepo) {
+    public CustomHttpAdapter(String appId, String password,
+        ConversationService conversationService) {
         super(new CustomCredentialProvider(appId, password));
         this.appId = appId;
         this.password = password;
-        this.refRepo = refRepo;
+        this.conversationService = conversationService;
     }
 
     public CustomHttpAdapter(String appId, String password) {
@@ -58,13 +59,20 @@ public class CustomHttpAdapter extends BotFrameworkAdapter {
     }
 
     public String sendMsg(String msg) {
-        List<ConversationRef> refList = new ArrayList<>();
-        refRepo.findAll().forEach(refList::add);
+        List<ConversationRef> refList = conversationService.findAllRef();
         for (ConversationRef ref : refList) {
-            log.info("ref {}", ref.get_id());
-            ChannelAccount account = ref.get_user();
-            log.info("user acount [{}]{}", account.getAadObjectId(), account.getName());
-            ref.setUser(account);
+            log.info("ref {} ", ref);
+            log.info("ref {}", ref.getUuid());
+            ChannelAccount userAccount = ref.get_user();
+            log.info("user Account [{}]{}", userAccount.getAadObjectId(), userAccount.getName());
+            ref.setUser(ChannelAccount.clone(userAccount));
+            ChannelAccount botAccount = ref.get_bot();
+            log.info("bot account [{}]{}", botAccount.getAadObjectId(), botAccount.getName());
+            ref.setBot(ChannelAccount.clone(botAccount));
+            ConversationAccount conversationAccount = ref.get_conversation();
+            log.info("conversation Account [{}]{}", conversationAccount.getAadObjectId(),
+                conversationAccount.getName());
+            ref.setConversation(ConversationAccount.clone(conversationAccount));
             this.continueConversation(appId,
                 ref, turnContext -> turnContext.sendActivity("send " + msg)
                     .thenApply(resourceResponse -> null));

@@ -5,11 +5,17 @@ import com.microsoft.bot.schema.RoleTypes;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.GenericGenerator;
 
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
@@ -19,13 +25,15 @@ import javax.persistence.OneToOne;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChannelBotAccount extends com.microsoft.bot.schema.ChannelAccount {
 
-    @Id
-    @GeneratedValue
-    @Column(name = "CHANNEL_BOT_ACCOUNT_ID")
-    private Long _id;
-
-    @OneToOne(mappedBy = "_bot")
+    @Setter(value = AccessLevel.PROTECTED)
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "_bot")
     private ConversationRef ref;
+
+    @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(name = "CHANNEL_BOT_ACCOUNT_ID")
+    private UUID uuid;
 
     @Column(name = "ID")
     private String id;
@@ -46,6 +54,19 @@ public class ChannelBotAccount extends com.microsoft.bot.schema.ChannelAccount {
         this.setRole(account.getRole());
         this.setName(account.getName());
         this.setAadObjectId(account.getAadObjectId());
+
+        for (String key : account.getProperties().keySet()) {
+            this.setProperties(key, account.getProperties().get(key));
+        }
+    }
+
+    public ChannelBotAccount(com.microsoft.bot.schema.ChannelAccount account, ConversationRef ref) {
+        this.setId(account.getId());
+        this.setRole(account.getRole());
+        this.setName(account.getName());
+        this.setAadObjectId(account.getAadObjectId());
+
+        this.setRef(ref);
 
         for (String key : account.getProperties().keySet()) {
             this.setProperties(key, account.getProperties().get(key));
@@ -74,5 +95,31 @@ public class ChannelBotAccount extends com.microsoft.bot.schema.ChannelAccount {
     public void setAadObjectId(String withAadObjectId) {
         this.aadObjectId = withAadObjectId;
         super.setAadObjectId(withAadObjectId);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ChannelBotAccount that = (ChannelBotAccount) o;
+
+        return new EqualsBuilder()
+            .append(getId(), that.getId())
+            .append(getRef(), that.getRef())
+            .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+            .append(getId())
+            .append(getRef())
+            .toHashCode();
     }
 }
