@@ -1,10 +1,10 @@
 package com.botframework.sample.echobot.repo;
 
 import com.botframework.sample.echobot.domain.ConversationAccount;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface ConversationAccountRepo extends CrudRepository<ConversationAccount, UUID> {
+public interface ConversationAccountRepo extends JpaRepository<ConversationAccount, UUID> {
 
 }

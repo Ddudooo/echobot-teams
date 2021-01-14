@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -57,5 +58,10 @@ public class ConversationService {
         List<ConversationRef> refs = new ArrayList<>();
         refRepo.findAll().forEach(refs::add);
         return refs;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<List<ChannelAccount>> findUserByName(String name) {
+        return userRepo.findByName(name);
     }
 }
